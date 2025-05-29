@@ -1,28 +1,83 @@
 pipeline {
-  agent any
+    agent any
 
-  stages {
-    stage('Build') {
-      steps {
-        bat 'npm install'
-      }
+    environment {
+        NODE_ENV = 'development'
     }
-    stage('Test') {
-      steps {
-        bat 'npm test'
-      }
+
+    tools {
+        nodejs 'NodeJS_18' // Ensure this matches your Jenkins Node.js tool name
     }
-    stage('Code Quality') {
-      steps {
-        withSonarQubeEnv('MySonarQubeServer') {
-          bat 'sonar-scanner'
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/JayCorp97/NeuraTrack.git'
+            }
         }
-      }
+
+        stage('Install Dependencies') {
+            steps {
+                bat 'npm install'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building the application...'
+                bat 'npm run build'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running unit tests...'
+                bat 'npm test'
+            }
+        }
+
+        stage('Code Quality') {
+            steps {
+                echo 'Running ESLint...'
+                bat 'npx eslint .'
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                echo 'Running OWASP Dependency Check...'
+                bat 'npx audit-ci --moderate'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying the app (dummy step)...'
+                // Simulate deployment step
+                bat 'echo Deploy to staging server here'
+            }
+        }
+
+        stage('Monitoring') {
+            steps {
+                echo 'Monitoring (dummy step)...'
+                bat 'echo Health checks or integration with Prometheus/Grafana'
+            }
+        }
+
     }
-    stage('Security') {
-      steps {
-        bat 'snyk test || exit /b 0'
-      }
+
+    post {
+        always {
+            echo 'Cleaning up workspace...'
+            deleteDir()
+        }
+        success {
+            echo 'Pipeline completed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed. Check logs above.'
+        }
     }
-  }
 }
