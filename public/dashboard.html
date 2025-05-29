@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Elder Dashboard</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <style>
+    body {
+      background-color: #f4f6f9;
+    }
+    .container {
+      margin-top: 50px;
+    }
+  </style>
+  <script>
+    if (!localStorage.getItem('loggedIn')) {
+    window.location.href = 'login.html'; // Or your actual login page
+  }
+
+  </script>
+</head>
+<body>
+  <div class="container">
+  <div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-outline-danger" onclick="logout()">Logout</button>
+  </div>
+
+    <div class="mb-3">
+      <input
+        type="text"
+        id="searchInput"
+        class="form-control"
+        placeholder="Search by name or condition..."
+        oninput="filterElders()"
+      />
+    </div>
+
+    <h2 class="mb-4 text-center">Elder Profiles</h2>
+
+    <table class="table table-bordered table-striped" id="eldersTable">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Gender</th>
+          <th>Medical Conditions</th>
+          <th>Contact Info</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+
+    <!-- Add Elder Form -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Add New Elder</h5>
+        <form id="addElderForm">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <input type="text" class="form-control" placeholder="Name" id="name" required />
+            </div>
+            <div class="col-md-2 mb-3">
+              <input type="number" class="form-control" placeholder="Age" id="age" required />
+            </div>
+            <div class="col-md-2 mb-3">
+              <select class="form-select" id="gender" required>
+                <option value="">Gender</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="col-md-4 mb-3">
+              <input type="text" class="form-control" placeholder="Contact Info" id="contact" />
+            </div>
+          </div>
+          <div class="mb-3">
+            <textarea class="form-control" placeholder="Medical Conditions" id="conditions" rows="2"></textarea>
+          </div>
+          <button class="btn btn-success" type="submit">Add Elder</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Elder Modal -->
+    <div class="modal fade" id="editElderModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="editElderForm">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit Elder</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="edit-id">
+              <input type="text" id="edit-name" class="form-control mb-2" placeholder="Name" required>
+              <input type="number" id="edit-age" class="form-control mb-2" placeholder="Age" required>
+              <select id="edit-gender" class="form-select mb-2" required>
+                <option value="">Gender</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+              <input type="text" id="edit-contact" class="form-control mb-2" placeholder="Contact Info">
+              <textarea id="edit-conditions" class="form-control" rows="2" placeholder="Medical Conditions"></textarea>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    function logout() {
+    localStorage.removeItem('loggedIn');
+    window.location.href = 'login.html'; // Or wherever your login screen is
+    }
+
+
+    const API_URL = 'http://localhost:5000/api/elders';
+    let allElders = [];
+
+    // Load all elders
+    async function loadElders() {
+      const response = await fetch(API_URL);
+      allElders = await response.json();
+      renderTable(allElders);
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      data.forEach(elder => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${elder.id}</td>
+          <td>${elder.name}</td>
+          <td>${elder.age}</td>
+          <td>${elder.gender}</td>
+          <td>${elder.medical_conditions || '-'}</td>
+          <td>${elder.contact_info || '-'}</td>
+          <td>
+            <button class="btn btn-sm btn-warning" onclick="editElder(${elder.id})">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteElder(${elder.id})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterElders() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allElders.filter(elder =>
+        elder.name.toLowerCase().includes(query) ||
+        (elder.medical_conditions || '').toLowerCase().includes(query)
+      );
+      renderTable(filtered);
+    }
+
+    // Add elder
+    document.getElementById('addElderForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const data = {
+        name: document.getElementById('name').value,
+        age: parseInt(document.getElementById('age').value),
+        gender: document.getElementById('gender').value,
+        medical_conditions: document.getElementById('conditions').value,
+        contact_info: document.getElementById('contact').value,
+      };
+
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        alert('Elder added successfully!');
+        this.reset();
+        loadElders();
+      } else {
+        alert('Failed to add elder.');
+      }
+    });
+
+    // Edit elder - populate modal
+    function editElder(id) {
+      fetch(`${API_URL}/${id}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('edit-id').value = data.id;
+          document.getElementById('edit-name').value = data.name;
+          document.getElementById('edit-age').value = data.age;
+          document.getElementById('edit-gender').value = data.gender;
+          document.getElementById('edit-contact').value = data.contact_info;
+          document.getElementById('edit-conditions').value = data.medical_conditions;
+
+          const modal = new bootstrap.Modal(document.getElementById('editElderModal'));
+          modal.show();
+        });
+    }
+
+    // Update elder
+    document.getElementById('editElderForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-id').value;
+      const data = {
+        name: document.getElementById('edit-name').value,
+        age: parseInt(document.getElementById('edit-age').value),
+        gender: document.getElementById('edit-gender').value,
+        medical_conditions: document.getElementById('edit-conditions').value,
+        contact_info: document.getElementById('edit-contact').value,
+      };
+
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        alert('Elder updated successfully!');
+        bootstrap.Modal.getInstance(document.getElementById('editElderModal')).hide();
+        loadElders();
+      } else {
+        alert('Failed to update elder.');
+      }
+    });
+
+    // Delete elder
+    async function deleteElder(id) {
+      if (confirm('Are you sure you want to delete this elder?')) {
+        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        loadElders();
+      }
+    }
+
+    window.onload = loadElders;
+  </script>
+</body>
+</html>

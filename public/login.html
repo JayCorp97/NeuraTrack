@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elder Care Login</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #f4f6f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .login-box {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    #message {
+      margin-top: 10px;
+      color: red;
+    }
+
+    #message.success {
+      color: green;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="login-box">
+    <h2 class="text-center mb-4">Login to Elder Care</h2>
+
+    <div class="mb-3">
+      <input type="email" id="email" class="form-control" placeholder="Email" required />
+    </div>
+    <div class="mb-3">
+      <input type="password" id="password" class="form-control" placeholder="Password" required />
+    </div>
+    <div class="d-grid">
+      <button class="btn btn-primary" onclick="login()">Login</button>
+    </div>
+    <div id="message" class="text-center mt-2"></div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Redirect if already logged in
+
+    window.onload = function () {
+      if (localStorage.getItem('loggedIn') && localStorage.getItem('token')) {
+        window.location.href = 'dashboard.html'; // Make sure this file exists or route is served
+      }
+    };
+
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        document.getElementById('message').textContent = 'Please fill in both fields.';
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:5000/api/users/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Save login state
+          localStorage.setItem('loggedIn', 'true');
+          localStorage.setItem('token', data.token);
+
+          // Redirect to dashboard
+          window.location.href = 'dashboard.html';
+        } else {
+          // Display error message
+          document.getElementById('message').textContent = data.message || 'Login failed';
+        }
+      } catch (error) {
+        document.getElementById('message').textContent = 'An error occurred. Please try again later.';
+      }
+    }
+  </script>
+
+</body>
+
+</html>
