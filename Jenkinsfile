@@ -4,31 +4,24 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'npm install'
+        bat 'npm install'
       }
     }
     stage('Test') {
       steps {
-        sh 'npm test'
+        bat 'npm test'
       }
     }
     stage('Code Quality') {
       steps {
-        // Assuming SonarQube is configured in Jenkins
         withSonarQubeEnv('MySonarQubeServer') {
-          sh 'sonar-scanner'
+          bat 'sonar-scanner'
         }
       }
     }
     stage('Security') {
       steps {
-        sh 'snyk test || true'
-      }
-    }
-    stage('Deploy') {
-      steps {
-        sh 'docker build -t myapp .'
-        sh 'docker-compose up -d'
+        bat 'snyk test || exit /b 0'
       }
     }
   }
