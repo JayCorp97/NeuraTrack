@@ -38,7 +38,7 @@ pipeline {
                     try {
                         bat 'npm test'
                     } catch (err) {
-                        echo '⚠️ Warning: Test step failed or not configured.'
+                        echo 'Warning: Test step failed or not configured.'
                     }
                 }
             }
@@ -51,7 +51,7 @@ pipeline {
                     try {
                         bat 'npx eslint .'
                     } catch (err) {
-                        echo '⚠️ Warning: ESLint failed or not configured properly.'
+                        echo 'Warning: ESLint failed or not configured properly.'
                     }
                 }
             }
