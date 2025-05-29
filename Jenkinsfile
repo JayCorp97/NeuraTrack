@@ -85,10 +85,10 @@ pipeline {
             deleteDir()
         }
         success {
-            echo '✅ Pipeline completed successfully.'
+            echo 'Pipeline completed successfully.'
         }
         failure {
-            echo '❌ Pipeline failed. Please review the error logs.'
+            echo 'Pipeline failed. Please review the error logs.'
         }
     }
 }
