@@ -1,12 +1,23 @@
-// eslint.config.js
-import js from '@eslint/js';
+// eslint.config.js (CommonJS)
+const js = require('@eslint/js');
 
-export default [
-  js.configs.recommended,
+module.exports = [
   {
     files: ['**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'commonjs',
+      globals: {
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+        console: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly',
+      },
+    },
     rules: {
-      // your custom rules
+      ...js.configs.recommended.rules,
     },
   },
 ];
