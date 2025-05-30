@@ -96,6 +96,18 @@ pipeline {
                 bat 'echo Setup health checks or Prometheus/Grafana here.'
             }
         }
+
+        stage('Docker Build & Run') {
+            steps {
+                echo 'Building Docker image...'
+                bat 'docker build -t neuratrack-app .'
+
+                echo 'Running Docker container...'
+                bat 'docker run -d -p 3000:3000 --name neuratrack-container neuratrack-app'
+            }
+        }
+
+
     }
 
     post {
