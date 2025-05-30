@@ -90,6 +90,13 @@ pipeline {
             }
         }
 
+        stage('Monitoring') {
+            steps {
+                echo 'Simulating monitoring setup...'
+                bat 'echo Setup health checks or Prometheus/Grafana here.'
+            }
+        }
+
         stage('Docker Build & Run') {
             steps {
                 echo 'Building Docker image...'
@@ -100,12 +107,6 @@ pipeline {
             }
         }
 
-        stage('Monitoring') {
-            steps {
-                echo 'Simulating monitoring setup...'
-                bat 'echo Setup health checks or Prometheus/Grafana here.'
-            }
-        }
 
     }
 
