@@ -6,11 +6,10 @@ pipeline {
     }
 
     tools {
-        nodejs 'NeuroNode' // Make sure this tool name exists in Jenkins global tool config
+        nodejs 'NeuroNode' // Make sure this tool is configured in Jenkins
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 git branch: 'master', url: 'https://github.com/JayCorp97/NeuraTrack.git'
@@ -33,7 +32,6 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Running unit tests...'
-                // Avoid failure if test script is missing
                 script {
                     try {
                         bat 'npm test'
@@ -44,23 +42,31 @@ pipeline {
             }
         }
 
-        stage('Code Quality') {
-            steps {
-                echo 'Running ESLint...'
-                script {
-                    try {
-                        bat 'npx eslint .'
-                    } catch (err) {
-                        echo 'Warning: ESLint failed or not configured properly.'
-                    }
-                }
-            }
-        }
+        // stage('Code Quality') {
+        //     steps {
+        //         echo 'Running ESLint...'
+        //         script {
+        //             try {
+        //                 bat 'npx eslint .'
+        //             } catch (err) {
+        //                 echo 'Warning: ESLint failed or not configured properly.'
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Security Scan') {
             steps {
                 echo 'Running security audit...'
                 bat 'npx audit-ci --moderate || echo "Security audit warnings found."'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('MySonarQubeServer') {
+                    bat 'npx sonar-scanner'
+                }
             }
         }
 
