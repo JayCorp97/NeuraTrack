@@ -48,11 +48,6 @@ app.get('*', (req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
-const tracer = require('dd-trace').init({
-  service: 'NeuraTrack', // name service
-  env: process.env.NODE_ENV || 'development',
-});
-
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

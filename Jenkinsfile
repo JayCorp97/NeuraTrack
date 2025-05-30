@@ -55,10 +55,23 @@ pipeline {
         //     }
         // }
 
-        stage('Security Scan') {
+        // stage('Security Scan') {
+        //     steps {
+        //         echo 'Running security audit...'
+        //         bat 'npx audit-ci --moderate || echo "Security audit warnings found."'
+        //     }
+        // }
+
+        stage('Security Scan - Snyk') {
+            environment {
+                SNYK_TOKEN = credentials('snyk-token')
+            }
             steps {
-                echo 'Running security audit...'
-                bat 'npx audit-ci --moderate || echo "Security audit warnings found."'
+                echo 'Authenticating with Snyk...'
+                bat 'snyk auth %SNYK_TOKEN%'
+                
+                echo 'Running Snyk security scan...'
+                bat 'snyk test || echo "Snyk scan found vulnerabilities."'
             }
         }
 
