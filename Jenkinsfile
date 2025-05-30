@@ -64,8 +64,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                echo 'Running SonarQube scan...'
-                withSonarQubeEnv('MySonarQubeServer') {  // Use the exact SonarQube server name configured in Jenkins
+                withSonarQubeEnv('MySonarQubeServer') {
                     bat 'npx sonar-scanner'
                 }
             }
