@@ -64,12 +64,12 @@ pipeline {
 
         stage('Security Scan - Snyk') {
             environment {
-                SNYK_TOKEN = credentials('snyk-token')
+                SNYK_TOKEN = credentials('snyk-token')  // Make sure this is added in Jenkins credentials
             }
             steps {
                 echo 'Authenticating with Snyk...'
                 bat 'snyk auth %SNYK_TOKEN%'
-                
+
                 echo 'Running Snyk security scan...'
                 bat 'snyk test || echo "Snyk scan found vulnerabilities."'
             }
