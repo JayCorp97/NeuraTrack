@@ -1,18 +1,24 @@
-# Use Node.js base image
+# Use an official Node.js LTS image
 FROM node:18
 
-# Create app directory
+# Set working directory inside the container
 WORKDIR /app
 
-# Copy dependencies
+# Copy only package files first for layer caching
 COPY package*.json ./
-RUN npm install
 
-# Copy source code
-#COPY . .
+# Install dependencies
+RUN npm install --production
 
-# Expose the port the app runs on
+# Copy the rest of your app's source code
+COPY . .
+
+# Expose the port your app runs on (adjust if not 3000)
 EXPOSE 3000
 
-# Start the app
-CMD ["npm", "start"]
+# Use non-root user for better security (optional but recommended)
+# RUN useradd -m appuser
+# USER appuser
+
+# Command to run your app
+CMD ["node", "app.js"]
