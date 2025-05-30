@@ -65,7 +65,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo 'Running SonarQube scan...'
-                withSonarQubeEnv('MySonarQubeServer') {
+                withSonarQubeEnv('MySonarQubeServer') {  // Replace with your actual SonarQube server name
                     bat 'npx sonar-scanner'
                 }
             }
