@@ -6,10 +6,11 @@ pipeline {
     }
 
     tools {
-        nodejs 'NeuroNode' // Make sure this tool is configured in Jenkins
+        nodejs 'NeuroNode' // Ensure this is configured under Jenkins global tools
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 git branch: 'master', url: 'https://github.com/JayCorp97/NeuraTrack.git'
@@ -42,34 +43,14 @@ pipeline {
             }
         }
 
-        // stage('Code Quality') {
-        //     steps {
-        //         echo 'Running ESLint...'
-        //         script {
-        //             try {
-        //                 bat 'npx eslint .'
-        //             } catch (err) {
-        //                 echo 'Warning: ESLint failed or not configured properly.'
-        //             }
-        //         }
-        //     }
-        // }
-
-        // stage('Security Scan') {
-        //     steps {
-        //         echo 'Running security audit...'
-        //         bat 'npx audit-ci --moderate || echo "Security audit warnings found."'
-        //     }
-        // }
-
         stage('Security Scan - Snyk') {
             environment {
-                SNYK_TOKEN = credentials('snyk-token')
+                SNYK_TOKEN = credentials('snyk-token') // Set this as a Jenkins credential
             }
             steps {
                 echo 'Authenticating with Snyk...'
                 bat '"C:\\Users\\Janitha Jayasanka\\AppData\\Roaming\\npm\\snyk.cmd" auth %SNYK_TOKEN%'
-        
+
                 echo 'Running Snyk security scan...'
                 bat '"C:\\Users\\Janitha Jayasanka\\AppData\\Roaming\\npm\\snyk.cmd" test || echo "Snyk scan found vulnerabilities."'
             }
@@ -83,20 +64,6 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-            steps {
-                echo 'Simulating deployment step...'
-                bat 'echo Deploying app to staging environment...'
-            }
-        }
-
-        stage('Monitoring') {
-            steps {
-                echo 'Simulating monitoring setup...'
-                bat 'echo Setup health checks or Prometheus/Grafana here.'
-            }
-        }
-
         stage('Docker Build & Run') {
             steps {
                 echo 'Building Docker image...'
@@ -107,7 +74,27 @@ pipeline {
             }
         }
 
+        stage('Push to Docker Hub') {
+            steps {
+                echo 'Tagging and pushing Docker image to Docker Hub...'
+                bat 'docker tag neuratrack-app jaycorp97/neuratrack-app:latest'
+                bat 'docker push jaycorp97/neuratrack-app:latest'
+            }
+        }
 
+        stage('Monitoring') {
+            steps {
+                echo 'Simulating monitoring setup...'
+                bat 'echo Setup health checks or Prometheus/Grafana here.'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Simulating deployment step...'
+                bat 'echo Deploying app to staging environment...'
+            }
+        }
     }
 
     post {
